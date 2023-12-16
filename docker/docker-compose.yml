@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  deepnet-service:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    tty: true
+    stdin_open: true
+    image: deepnet
+    container_name: deepnet
+    volumes:
+      - ../:/app
+    ports:
+      - "8888:8888"

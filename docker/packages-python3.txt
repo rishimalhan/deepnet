@@ -1,0 +1,8 @@
+jupyter
+matplotlib
+pandas
+transformers
+datasets
+tiktoken
+wandb
+tqdm
