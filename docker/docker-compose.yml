@@ -5,12 +5,15 @@ services:
     build:
       context: ../
       dockerfile: docker/Dockerfile
+    container_name: deepnet
+    image: deepnet
     tty: true
     stdin_open: true
-    image: deepnet
-    container_name: deepnet
+    environment:
+      OMP_NUM_THREADS: 8
+      PYTHONUNBUFFERED: 1
     volumes:
-      - ../:/app
+      - ../:/app  # Mount the app directory for development
     ports:
-      - "8888:8888"
-      - "8080:8080"
+      - "8888:8888"  # Expose Jupyter or similar ports
+      - "8080:8080"  # Expose application/service ports
