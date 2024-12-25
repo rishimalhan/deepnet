@@ -38,7 +38,6 @@ RUN rm -rf VALL-E-X
 
 RUN pip install --upgrade openai alive-progress scikit-learn tqdm openai-whisper ffmpeg-python setuptools-rust
 
-ENV export OPENAI_API_KEY="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"
 RUN echo "alias python=python3" >> /root/.bashrc
 RUN chmod 755 /app/docker/entrypoint.sh
 
