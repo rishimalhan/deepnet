@@ -8,6 +8,7 @@ SECTION-1
 * Introduction
 Pytorch tensors are like numpy but on GPUs
 Pytorch is dynamic whereas tensorflow is static
+Pytorch recreates the graph from scratch in every iteration
 Dynamic approach uses imperative style of programming whereas static uses declarative
 Linear thought process. Faster and easier to debug.
 Stacktrace gives exact line of error.
@@ -97,7 +98,7 @@ SECTION-2
 * Simple Neural Network
 - ANN can be viewed as a graph with nodes and edges
 - Activation function can be viewed as a kink or transformation
-- Activation funciton is also known as transfer function
+- Activation function is also known as transfer function
 - Sigmoid has a nice gradient in around X=0 and then approaches hard 0 or 1 value
 - tanh and ReLU are others
 

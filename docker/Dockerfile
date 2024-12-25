@@ -41,4 +41,8 @@ RUN pip install --upgrade openai alive-progress scikit-learn tqdm openai-whisper
 ENV export OPENAI_API_KEY="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"
 RUN echo "alias python=python3" >> /root/.bashrc
 RUN chmod 755 /app/docker/entrypoint.sh
+
+EXPOSE 8080
+RUN apt-get install libportaudio2
+
 ENTRYPOINT ["bash",  "/app/docker/entrypoint.sh" ]

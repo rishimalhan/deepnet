@@ -1,0 +1,41 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/alpine
+{
+	"name": "deepnet_dev",
+	"dockerComposeFile": "../docker/docker-compose.yml",
+	"workspaceFolder": "/app",
+	"service": "deepnet-service",
+	"customizations": {
+		"settings": {
+			"workbench.colorTheme": "Default Dark Modern",
+			"window.zoomLevel": 1,
+			"git.openRepositoryInParentFolders": "always",
+			"security.workspace.trust.untrustedFiles": "open",
+			"python.autoComplete.extraPaths": [
+				"/app/src/"
+			],
+			"python.analysis.extraPaths": [
+				"/app/src/"
+			],
+			"python.formatting.blackPath": "/usr/local/bin/black",
+			"python.formatting.provider": "black",
+			"git.mergeEditor": true,
+			"editor.formatOnSave": true,
+			"editor.multiCursorModifier": "ctrlCmd",
+			"[python]": {
+				"editor.formatOnType": true,
+				"editor.defaultFormatter": "ms-python.python"
+			},
+			"editor.unicodeHighlight.nonBasicASCII": false,
+			"extensions.autoUpdate": false,
+			"cmake.showOptionsMovedNotification": false,
+			"editor.inlineSuggest.enabled": true,
+		},
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"ms-python.black-formatter"
+			]
+		}
+	}
+}
