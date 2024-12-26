@@ -64,7 +64,7 @@ torch.from_numpy(np.ndarray). Here changes in numpy will result in changes in te
 torch.cuda.is_available()
 torch.cuda.device_count()
 torch.cuda.get_device_name(0)
-t = torach.FloatTensor()
+t = torch.FloatTensor()
 t.cuda(0) means 0 number device
 t.cpu() takes it back to CPU
 
@@ -250,8 +250,8 @@ P(w_t | context), t in Vocabulary
 
 run_section_1 = False
 run_section_2 = False
-run_section_3 = False
-run_section_4 = True
+run_section_3 = True
+run_section_4 = False
 
 import IPython
 import os
@@ -263,37 +263,45 @@ import torchvision
 from torch.autograd import Variable
 from torch import FloatTensor
 import logging
-
 import numpy as np
 import pandas as pd
 from torch.utils.data.dataset import Dataset
-
-
 import torch.nn.functional as F
+import multiprocessing
+
+multiprocessing.set_start_method("fork")
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
 logger.warning(f"Torch version: {torch.__version__}")
 
+ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+DEVICE = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
 
-def main(epochs, train_loader, test_loader, model, criterion, optimizer):
+def main(epochs, train_loader, test_loader, model, criterion, optimizer, device=DEVICE):
+    # Move model to the specified device
+    model = model.to(device)
+
     # Epochs
     train_loss = []
     test_loss = []
     train_accuracy = []
     test_accuracy = []
+
     for iter in range(epochs):
         train_correct = [0, 0]  # Accurate, Total
         train_batch_loss = []
 
         test_correct = [0, 0]  # Accurate, Total
         test_batch_loss = []
-        # Iterations
+
+        # Training iterations
         for idx, (items, classes) in enumerate(train_loader):
-            input_data = Variable(items)
-            input_classes = Variable(classes)
+            # Move data and labels to the device
+            input_data = items.to(device)
+            input_classes = classes.to(device)
+
             model.train()
             optimizer.zero_grad()
             outputs = model(input_data)
@@ -301,35 +309,37 @@ def main(epochs, train_loader, test_loader, model, criterion, optimizer):
             loss.backward()
             optimizer.step()
 
-            # Book keeping
-            # Training
+            # Bookkeeping - Training
             _, predicted = torch.max(outputs.data, 1)
-            train_correct[0] += (predicted == input_classes.data).sum()
+            train_correct[0] += (predicted == input_classes).sum().item()
             train_correct[1] += classes.size(0)
             train_batch_loss.append(loss.item())
 
         train_loss.append(np.average(train_batch_loss))
         train_accuracy.append(train_correct[0] / train_correct[1] * 100)
 
-        for idx, (items, classes) in enumerate(test_loader):
-            input_data = Variable(items)
-            input_classes = Variable(classes)
-            model.eval()
-            outputs = model(input_data)
-            loss = criterion(outputs, input_classes)
+        # Testing iterations
+        with torch.no_grad():
+            for idx, (items, classes) in enumerate(test_loader):
+                # Move data and labels to the device
+                input_data = items.to(device)
+                input_classes = classes.to(device)
 
-            # Book keeping
-            # Testing
-            _, predicted = torch.max(outputs.data, 1)
-            test_correct[0] += (predicted == input_classes.data).sum()
-            test_correct[1] += classes.size(0)
-            test_batch_loss.append(loss.item())
+                model.eval()
+                outputs = model(input_data)
+                loss = criterion(outputs, input_classes)
 
-        test_loss.append(np.average(loss.item()))
+                # Bookkeeping - Testing
+                _, predicted = torch.max(outputs.data, 1)
+                test_correct[0] += (predicted == input_classes).sum().item()
+                test_correct[1] += classes.size(0)
+                test_batch_loss.append(loss.item())
+
+        test_loss.append(np.average(test_batch_loss))
         test_accuracy.append(test_correct[0] / test_correct[1] * 100)
 
         logger.info(
-            f"Train|Test-> Accuracy: {train_accuracy[-1]} | {test_accuracy[-1]} Loss: {train_loss[-1]} | {test_loss[-1]}"
+            f"Epoch {iter + 1}/{epochs} | Train Accuracy: {train_accuracy[-1]:.2f}% | Test Accuracy: {test_accuracy[-1]:.2f}% | Train Loss: {train_loss[-1]:.4f} | Test Loss: {test_loss[-1]:.4f}"
         )
 
 
@@ -353,7 +363,7 @@ if run_section_1:
         ]
     )
     trainset = torchvision.datasets.CIFAR10(
-        root="./data/", train=True, transform=tf_composed, download=True
+        root=os.path.join(ROOT, "data"), train=True, transform=tf_composed, download=True
     )
     # trainloader will have a batch at a time
     trainloader = torch.utils.data.DataLoader(
@@ -415,7 +425,7 @@ if run_section_2:
             out = self.layer3(out)
             return out
 
-    train_data, test_data = get_datasets("../data/iris_data.txt")
+    train_data, test_data = get_datasets(os.path.join(ROOT, "data", "iris_data.txt"))
     logger.info(f"Instances in train data: {len(train_data)}")
     logger.info(f"Instances in test data: {len(test_data)}")
     model = IrisNet(4, 100, 50, 3)
@@ -443,10 +453,10 @@ if run_section_3:
         ]
     )
     train_data = torchvision.datasets.MNIST(
-        "../data/", train=True, download=True, transform=tf_composed
+        root=os.path.join(ROOT, "data"), train=True, download=True, transform=tf_composed
     )
     test_data = torchvision.datasets.MNIST(
-        "../data/", train=False, download=True, transform=tf_composed
+        root=os.path.join(ROOT, "data"), train=False, download=True, transform=tf_composed
     )
 
     mnist_train_loader = torch.utils.data.DataLoader(
@@ -603,112 +613,112 @@ if run_section_4:
             )
 
 
-def batchify(data, batch_size):
-    # Work out how cleanly we can divide the dataset into bsz parts.
-    nbatch = data.size(0) // batch_size
-    # Trim off any extra elements that wouldn't cleanly fit (remainders).
-    data = data.narrow(0, 0, nbatch * batch_size)
-    # Evenly divide the data across the bsz batches.
-    data = data.view(batch_size, -1).t().contiguous()
-    return data
+    def batchify(data, batch_size):
+        # Work out how cleanly we can divide the dataset into bsz parts.
+        nbatch = data.size(0) // batch_size
+        # Trim off any extra elements that wouldn't cleanly fit (remainders).
+        data = data.narrow(0, 0, nbatch * batch_size)
+        # Evenly divide the data across the bsz batches.
+        data = data.view(batch_size, -1).t().contiguous()
+        return data
 
 
-def get_batch(source, i, bptt_size, evaluation=False):
-    seq_len = min(bptt_size, len(source) - 1 - i)
-    data = Variable(source[i : i + seq_len], volatile=evaluation)
-    target = Variable(source[i + 1 : i + 1 + seq_len].view(-1))
-    return data, target
+    def get_batch(source, i, bptt_size, evaluation=False):
+        seq_len = min(bptt_size, len(source) - 1 - i)
+        data = Variable(source[i : i + seq_len], volatile=evaluation)
+        target = Variable(source[i + 1 : i + 1 + seq_len].view(-1))
+        return data, target
 
 
-path = "../data/shakespeare"
-corpus = Corpus(path)
+    path = os.path.join(ROOT, "data", "shakespeare")
+    corpus = Corpus(path)
 
-bs_train = 20  # batch size for training set
-bs_valid = 10  # batch size for validation set
-bptt_size = 35  # number of times to unroll the graph for back propagation through time
-clip = 0.25  # gradient clipping to check exploding gradient
+    bs_train = 20  # batch size for training set
+    bs_valid = 10  # batch size for validation set
+    bptt_size = 35  # number of times to unroll the graph for back propagation through time
+    clip = 0.25  # gradient clipping to check exploding gradient
 
-embed_size = 200  # size of the embedding vector
-hidden_size = 200  # size of the hidden state in the RNN
-num_layers = 2  # number of RNN layres to use
-dropout_pct = 0.5  # %age of neurons to drop out for regularization
+    embed_size = 200  # size of the embedding vector
+    hidden_size = 200  # size of the hidden state in the RNN
+    num_layers = 2  # number of RNN layres to use
+    dropout_pct = 0.5  # %age of neurons to drop out for regularization
 
-train_data = batchify(corpus.train, bs_train)
-val_data = batchify(corpus.valid, bs_valid)
+    train_data = batchify(corpus.train, bs_train)
+    val_data = batchify(corpus.valid, bs_valid)
 
-vocab_size = len(corpus.dictionary)
+    vocab_size = len(corpus.dictionary)
 
-model = RNNModel(vocab_size, embed_size, hidden_size, num_layers, dropout_pct)
-criterion = torch.nn.CrossEntropyLoss()
+    model = RNNModel(vocab_size, embed_size, hidden_size, num_layers, dropout_pct)
+    criterion = torch.nn.CrossEntropyLoss()
 
-data, target = get_batch(train_data, 1, bptt_size)
-
-
-def train(data_source, lr, bptt_size, bs_train, clip=0.25):
-    # Turn on training mode which enables dropout.
-
-    model.train()
-    total_loss = 0
-    hidden = model.init_hidden(bs_train)
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-
-    for batch, i in enumerate(range(0, data_source.size(0) - 1, bptt_size)):
-        data, targets = get_batch(data_source, i, bptt_size)
-
-        # Starting each batch, we detach the hidden state from how it was previously produced.
-        # If we didn't, the model would try backpropagating all the way to start of the dataset.
-        hidden = Variable(hidden.data)
-
-        # model.zero_grad()
-        optimizer.zero_grad()
-
-        output, hidden = model(data, hidden)
-        loss = criterion(output.view(-1, vocab_size), targets)
-        loss.backward()
-
-        # `clip_grad_norm` helps prevent the exploding gradient problem in RNNs / LSTMs.
-        torch.nn.utils.clip_grad_norm(model.parameters(), clip)
-
-        optimizer.step()
-        total_loss += len(data) * loss.data
-
-    return total_loss[0] / len(data_source)
+    data, target = get_batch(train_data, 1, bptt_size)
 
 
-def evaluate(data_source, bs_valid, bptt_size, vocab_size):
-    # Turn on evaluation mode which disables dropout.
-    model.eval()
-    total_loss = 0
-    hidden = model.init_hidden(bs_valid)
+    def train(data_source, lr, bptt_size, bs_train, clip=0.25):
+        # Turn on training mode which enables dropout.
 
-    for i in range(0, data_source.size(0) - 1, bptt_size):
-        data, targets = get_batch(data_source, i, evaluation=True)
+        model.train()
+        total_loss = 0
+        hidden = model.init_hidden(bs_train)
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
-        output, hidden = model(data, hidden)
-        output_flat = output.view(-1, vocab_size)
+        for batch, i in enumerate(range(0, data_source.size(0) - 1, bptt_size)):
+            data, targets = get_batch(data_source, i, bptt_size)
 
-        total_loss += len(data) * criterion(output_flat, targets).data
-        hidden = Variable(hidden.data)
+            # Starting each batch, we detach the hidden state from how it was previously produced.
+            # If we didn't, the model would try backpropagating all the way to start of the dataset.
+            hidden = Variable(hidden.data)
 
-    return total_loss[0] / len(data_source)
+            # model.zero_grad()
+            optimizer.zero_grad()
 
+            output, hidden = model(data, hidden)
+            loss = criterion(output.view(-1, vocab_size), targets)
+            loss.backward()
 
-best_val_loss = None
+            # `clip_grad_norm` helps prevent the exploding gradient problem in RNNs / LSTMs.
+            torch.nn.utils.clip_grad_norm(model.parameters(), clip)
 
+            optimizer.step()
+            total_loss += len(data) * loss.data
 
-def run(epochs, lr, bptt_size, bs_train, bs_valid, vocab_size):
-    global best_val_loss
-
-    for epoch in range(0, epochs):
-        train_loss = train(train_data, lr, bptt_size, bs_train)
-        val_loss = evaluate(val_data, bs_valid, bptt_size, vocab_size)
-        logger.info(f"Train Loss: {train_loss}. Valid Loss: {val_loss}")
-
-        if not best_val_loss or val_loss < best_val_loss:
-            best_val_loss = val_loss
-            torch.save(model.state_dict(), "../model/rnn.model.pth")
+        return total_loss[0] / len(data_source)
 
 
-run(5, 0.001, bptt_size, bs_train, bs_valid, vocab_size)
+    def evaluate(data_source, bs_valid, bptt_size, vocab_size):
+        # Turn on evaluation mode which disables dropout.
+        model.eval()
+        total_loss = 0
+        hidden = model.init_hidden(bs_valid)
 
-IPython.embed()
+        for i in range(0, data_source.size(0) - 1, bptt_size):
+            data, targets = get_batch(data_source, i, evaluation=True)
+
+            output, hidden = model(data, hidden)
+            output_flat = output.view(-1, vocab_size)
+
+            total_loss += len(data) * criterion(output_flat, targets).data
+            hidden = Variable(hidden.data)
+
+        return total_loss[0] / len(data_source)
+
+
+    best_val_loss = None
+
+
+    def run(epochs, lr, bptt_size, bs_train, bs_valid, vocab_size):
+        global best_val_loss
+
+        for epoch in range(0, epochs):
+            train_loss = train(train_data, lr, bptt_size, bs_train)
+            val_loss = evaluate(val_data, bs_valid, bptt_size, vocab_size)
+            logger.info(f"Train Loss: {train_loss}. Valid Loss: {val_loss}")
+
+            if not best_val_loss or val_loss < best_val_loss:
+                best_val_loss = val_loss
+                torch.save(model.state_dict(), "../model/rnn.model.pth")
+
+
+    run(5, 0.001, bptt_size, bs_train, bs_valid, vocab_size)
+
+    IPython.embed()

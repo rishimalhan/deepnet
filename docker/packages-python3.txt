@@ -6,3 +6,9 @@ tiktoken
 wandb
 tqdm
 scipy
+black==24.4.2
+ipython
+torch
+torchvision
+torchaudio
+numpy

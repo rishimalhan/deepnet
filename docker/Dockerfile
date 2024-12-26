@@ -22,10 +22,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install the latest PyTorch and related libraries
-RUN pip install --no-cache-dir \
-    torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-
 RUN python3.11 -m pip install --no-cache-dir -r packages-python3.txt
 RUN apt-get update && xargs -a packages-apt.txt apt-get install -y
 
