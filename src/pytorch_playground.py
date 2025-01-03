@@ -277,7 +277,10 @@ logger.setLevel(logging.INFO)
 logger.warning(f"Torch version: {torch.__version__}")
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-DEVICE = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
+DEVICE = (
+    torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
+)
+
 
 def main(epochs, train_loader, test_loader, model, criterion, optimizer, device=DEVICE):
     # Move model to the specified device
@@ -363,11 +366,14 @@ if run_section_1:
         ]
     )
     trainset = torchvision.datasets.CIFAR10(
-        root=os.path.join(ROOT, "data"), train=True, transform=tf_composed, download=True
+        root=os.path.join(ROOT, "data"),
+        train=True,
+        transform=tf_composed,
+        download=True,
     )
     # trainloader will have a batch at a time
     trainloader = torch.utils.data.DataLoader(
-        trainset, batch_size=10, shuffle=True, num_workers=2
+        trainset, batch_size=10, shuffle=True, num_workers=2, pin_memory=True
     )
 
     for i, data in enumerate(trainloader):
@@ -436,10 +442,10 @@ if run_section_2:
     )
 
     iris_train_loader = torch.utils.data.DataLoader(
-        dataset=train_data, batch_size=60, shuffle=True, num_workers=2
+        dataset=train_data, batch_size=60, shuffle=True, num_workers=2, pin_memory=True
     )
     iris_test_loader = torch.utils.data.DataLoader(
-        dataset=test_data, batch_size=60, shuffle=True, num_workers=2
+        dataset=test_data, batch_size=60, shuffle=True, num_workers=2, pin_memory=True
     )
     main(500, iris_train_loader, iris_test_loader, model, criterion, optimizer)
 
@@ -453,17 +459,23 @@ if run_section_3:
         ]
     )
     train_data = torchvision.datasets.MNIST(
-        root=os.path.join(ROOT, "data"), train=True, download=True, transform=tf_composed
+        root=os.path.join(ROOT, "data"),
+        train=True,
+        download=True,
+        transform=tf_composed,
     )
     test_data = torchvision.datasets.MNIST(
-        root=os.path.join(ROOT, "data"), train=False, download=True, transform=tf_composed
+        root=os.path.join(ROOT, "data"),
+        train=False,
+        download=True,
+        transform=tf_composed,
     )
 
     mnist_train_loader = torch.utils.data.DataLoader(
-        train_data, shuffle=True, batch_size=1024, num_workers=2
+        train_data, shuffle=True, batch_size=1024, num_workers=2, pin_memory=True
     )
     mnist_test_loader = torch.utils.data.DataLoader(
-        test_data, shuffle=True, batch_size=1024, num_workers=2
+        test_data, shuffle=True, batch_size=1024, num_workers=2, pin_memory=True
     )
 
     class MNISTNet(torch.nn.Module):
@@ -612,7 +624,6 @@ if run_section_4:
                 weight.new(self.num_layers, batch_size, self.hidden_size).zero_()
             )
 
-
     def batchify(data, batch_size):
         # Work out how cleanly we can divide the dataset into bsz parts.
         nbatch = data.size(0) // batch_size
@@ -622,20 +633,20 @@ if run_section_4:
         data = data.view(batch_size, -1).t().contiguous()
         return data
 
-
     def get_batch(source, i, bptt_size, evaluation=False):
         seq_len = min(bptt_size, len(source) - 1 - i)
         data = Variable(source[i : i + seq_len], volatile=evaluation)
         target = Variable(source[i + 1 : i + 1 + seq_len].view(-1))
         return data, target
 
-
     path = os.path.join(ROOT, "data", "shakespeare")
     corpus = Corpus(path)
 
     bs_train = 20  # batch size for training set
     bs_valid = 10  # batch size for validation set
-    bptt_size = 35  # number of times to unroll the graph for back propagation through time
+    bptt_size = (
+        35  # number of times to unroll the graph for back propagation through time
+    )
     clip = 0.25  # gradient clipping to check exploding gradient
 
     embed_size = 200  # size of the embedding vector
@@ -652,7 +663,6 @@ if run_section_4:
     criterion = torch.nn.CrossEntropyLoss()
 
     data, target = get_batch(train_data, 1, bptt_size)
-
 
     def train(data_source, lr, bptt_size, bs_train, clip=0.25):
         # Turn on training mode which enables dropout.
@@ -684,7 +694,6 @@ if run_section_4:
 
         return total_loss[0] / len(data_source)
 
-
     def evaluate(data_source, bs_valid, bptt_size, vocab_size):
         # Turn on evaluation mode which disables dropout.
         model.eval()
@@ -702,9 +711,7 @@ if run_section_4:
 
         return total_loss[0] / len(data_source)
 
-
     best_val_loss = None
-
 
     def run(epochs, lr, bptt_size, bs_train, bs_valid, vocab_size):
         global best_val_loss
@@ -717,7 +724,6 @@ if run_section_4:
             if not best_val_loss or val_loss < best_val_loss:
                 best_val_loss = val_loss
                 torch.save(model.state_dict(), "../model/rnn.model.pth")
-
 
     run(5, 0.001, bptt_size, bs_train, bs_valid, vocab_size)
 
