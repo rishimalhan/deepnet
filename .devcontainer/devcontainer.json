@@ -17,7 +17,7 @@
 			"python.analysis.extraPaths": [
 				"/app/src/"
 			],
-			"python.formatting.blackPath": "/usr/local/bin/black",
+			"python.formatting.blackPath": "/usr/local/lib/python3.11/site-packages",
 			"python.formatting.provider": "black",
 			"git.mergeEditor": true,
 			"editor.formatOnSave": true,
