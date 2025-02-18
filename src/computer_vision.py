@@ -141,12 +141,12 @@ criterion = nn.CrossEntropyLoss()
 learning_rate = 0.01
 optimizer = SGD(model.parameters(), lr=learning_rate, nesterov=True, momentum=0.9, dampening=0)
 
-model.train()
 for epoch in range(EPOCHS):
     train_loss = []
     train_accuracy = []
     test_loss = []
     test_accuracy = []
+    model.train()
     for i, (images, labels) in enumerate(mnist_train_loader):
         images = Variable(images).to(DEVICE)
         labels = Variable(labels).to(DEVICE)
@@ -161,6 +161,7 @@ for epoch in range(EPOCHS):
         train_accuracy.append(correct / labels.size(0))
 
     # validation
+    model.eval()
     for i, (images, labels) in enumerate(mnist_test_loader):
         images = Variable(images).to(DEVICE)
         labels = Variable(labels).to(DEVICE)
