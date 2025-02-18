@@ -250,8 +250,8 @@ P(w_t | context), t in Vocabulary
 
 run_section_1 = False
 run_section_2 = False
-run_section_3 = True
-run_section_4 = False
+run_section_3 = False
+run_section_4 = True
 
 import IPython
 import os
@@ -637,9 +637,9 @@ if run_section_4:
         seq_len = min(bptt_size, len(source) - 1 - i)
         data = Variable(source[i : i + seq_len], volatile=evaluation)
         target = Variable(source[i + 1 : i + 1 + seq_len].view(-1))
-        return data, target
+        return data.to(DEVICE), target.to(DEVICE)
 
-    path = os.path.join(ROOT, "data", "shakespeare")
+    path = os.path.join(ROOT, "data", "shakespear")
     corpus = Corpus(path)
 
     bs_train = 20  # batch size for training set
@@ -659,7 +659,7 @@ if run_section_4:
 
     vocab_size = len(corpus.dictionary)
 
-    model = RNNModel(vocab_size, embed_size, hidden_size, num_layers, dropout_pct)
+    model = RNNModel(vocab_size, embed_size, hidden_size, num_layers, dropout_pct).to(DEVICE)
     criterion = torch.nn.CrossEntropyLoss()
 
     data, target = get_batch(train_data, 1, bptt_size)
@@ -677,7 +677,7 @@ if run_section_4:
 
             # Starting each batch, we detach the hidden state from how it was previously produced.
             # If we didn't, the model would try backpropagating all the way to start of the dataset.
-            hidden = Variable(hidden.data)
+            hidden = Variable(hidden.data).to(DEVICE)
 
             # model.zero_grad()
             optimizer.zero_grad()

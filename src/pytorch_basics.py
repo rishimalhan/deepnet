@@ -8,8 +8,9 @@ Pytorch:
 - Popularity due to two main reasons: 1) Dynamic computation graph 2) Numpy version for CUDA
 - Dynamic computation graph or Imperative style
 - Dynamic computation graph is a graph that is created on the fly as the operations are executed
-- Imperative style is a style of programming where you write code that describes what you want to do, not how you want to do it
-- Pytorch is a Imperative style of programming
+- Imperative style is a style of programming where you write code that describes 
+    what you want to do, not how you want to do it
+- Pytorch is an Imperative style of programming
 
 Numpy and Pytorch:
 - Pytorch is a numpy version for CUDA
@@ -23,7 +24,7 @@ Pytorch tensors:
 - Pytorch tensors are multi-dimensional arrays
 - Pytorch tensors are used to store data
 - Dimensions are number of indexes required to access an element in a tensor
-- Rank is the number of dimensions in a tensor
+- Rank is the number of dimensions in a tensor or same as above
 
 Pytorch Variable:
 - We need to store parent of tensor, the gradient of the tensor, and the value of the tensor
@@ -49,13 +50,15 @@ Deep learning with Pytorch:
 
 - Computer vision:
     - Object detection (instance segmentation, semantic segmentation)
-        - Instance segmentation segments each object into classes even if they belong to the same one
+        - Instance segmentation segments each object into respective classes even if they belong 
+            to the same group or are close to each other
         - Semantic segmentation only classifies classes (would club objects of the same class)
     - Localization is finding the bounding box of the object or its position and orientation
 
 - Sentiment analysis:
     - Sentiment analysis is a type of text classification
-    - Sentiment analysis is the task of classifying text into a positive, negative, or neutral sentiment-based category
+    - Sentiment analysis is the task of classifying text into a 
+        positive, negative, or neutral sentiment-based category
 
 - Speech recognition:
     - Task of recognizing spoken words
@@ -97,6 +100,6 @@ tf_composed = transforms.Compose(
 trainset = CIFAR10(
     root=os.path.join(ROOT, "data"), train=True, transform=tf_composed, download=True
 )
-mnist_data = DataLoader(dataset=trainset, batch_size=32, shuffle=True, num_workers=10)
+cifar_data = DataLoader(dataset=trainset, batch_size=32, shuffle=True, num_workers=10)
 
 embed()
