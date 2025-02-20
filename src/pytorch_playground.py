@@ -692,16 +692,16 @@ if run_section_4:
             optimizer.step()
             total_loss += len(data) * loss.data
 
-        return total_loss[0] / len(data_source)
+        return total_loss / len(data_source)
 
-    def evaluate(data_source, bs_valid, bptt_size, vocab_size):
+    def evaluate(data_source, bptt_size, bs_valid, vocab_size):
         # Turn on evaluation mode which disables dropout.
         model.eval()
         total_loss = 0
         hidden = model.init_hidden(bs_valid)
 
         for i in range(0, data_source.size(0) - 1, bptt_size):
-            data, targets = get_batch(data_source, i, evaluation=True)
+            data, targets = get_batch(data_source, i, bptt_size, evaluation=True)
 
             output, hidden = model(data, hidden)
             output_flat = output.view(-1, vocab_size)
@@ -709,7 +709,7 @@ if run_section_4:
             total_loss += len(data) * criterion(output_flat, targets).data
             hidden = Variable(hidden.data)
 
-        return total_loss[0] / len(data_source)
+        return total_loss / len(data_source)
 
     best_val_loss = None
 
@@ -718,13 +718,13 @@ if run_section_4:
 
         for epoch in range(0, epochs):
             train_loss = train(train_data, lr, bptt_size, bs_train)
-            val_loss = evaluate(val_data, bs_valid, bptt_size, vocab_size)
-            logger.info(f"Train Loss: {train_loss}. Valid Loss: {val_loss}")
+            val_loss = evaluate(val_data, bptt_size, bs_valid, vocab_size)
+            logger.info(f"Epoch: {epoch}. Train Loss: {train_loss}. Valid Loss: {val_loss}")
 
             if not best_val_loss or val_loss < best_val_loss:
                 best_val_loss = val_loss
-                torch.save(model.state_dict(), "../model/rnn.model.pth")
+                torch.save(model.state_dict(), os.path.join(ROOT, "model", "rnn.model.pth"))
 
-    run(5, 0.001, bptt_size, bs_train, bs_valid, vocab_size)
+    run(100, 0.001, bptt_size, bs_train, bs_valid, vocab_size)
 
     IPython.embed()

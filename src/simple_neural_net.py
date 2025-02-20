@@ -1,6 +1,7 @@
 #! usr/bin/python3
 
 """
+Doesn't assume structure (spatial, temporal, or otherwise)
 Artificial neural network is a graph of nodes and edges
 Neuron is a node in the neural network
 Node with multiple inputs with weights associated and itself has a bias associated

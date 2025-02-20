@@ -1,6 +1,8 @@
 #! /usr/bin/python3
 
 """
+Exploits Spatial Invariance
+
 Ability to have a high level understanding from images and videos
 Do tasks that human visual system can do
 Single objects:
