@@ -198,8 +198,8 @@ class DQNAgent:
 
 
 if __name__ == "__main__":
-    render_mode = "human"  # Viewing mode
-    # render_mode = "rgb_array"  # Training mode
+    # render_mode = "human"  # Viewing mode
+    render_mode = "rgb_array"  # Training mode
     agent = DQNAgent(render_mode=render_mode)
 
     # Train
@@ -210,7 +210,7 @@ if __name__ == "__main__":
     if render_mode == "human":
         agent.load_model()
         agent.epsilon = 0.0  # Important piece here
-        for i in range(10):
+        for i in range(5):
             state = agent.env.reset()[0]
             done = False
             while not done:
