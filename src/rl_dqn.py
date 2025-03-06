@@ -74,8 +74,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-DEVICE = "mps" if torch.mps.is_available() else "cpu"
-EPOCHS = 500
+DEVICE = "cpu"  # Trains too slow in gpu
+EPOCHS = 1000
 MEMORY_SIZE = 2000
 
 
@@ -131,6 +131,7 @@ class DQNAgent:
 
         for i in range(self.iterations):
             mini_batch = random.sample(self.memory, self.batch_size)
+
             # Convert batch to tensors
             states = Tensor(np.array([value[0] for value in mini_batch])).to(DEVICE)
             actions = (
@@ -197,8 +198,8 @@ class DQNAgent:
 
 
 if __name__ == "__main__":
-    render_mode = "human"
-    # render_mode = "rgb_array"
+    # render_mode = "human" # Viewing mode
+    render_mode = "rgb_array"  # Training mode
     agent = DQNAgent(render_mode=render_mode)
 
     # Train
