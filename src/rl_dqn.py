@@ -198,8 +198,8 @@ class DQNAgent:
 
 
 if __name__ == "__main__":
-    # render_mode = "human" # Viewing mode
-    render_mode = "rgb_array"  # Training mode
+    render_mode = "human"  # Viewing mode
+    # render_mode = "rgb_array"  # Training mode
     agent = DQNAgent(render_mode=render_mode)
 
     # Train
