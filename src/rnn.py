@@ -67,19 +67,21 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), 
 DEVICE = "mps" if torch.mps.is_available() else "cpu"
 SHAKESPEARE_DIR = os.path.join(ROOT, "shakespeare/")
 
+
 class Dictionary(object):
-        def __init__(self):
-            self.word2idx = {}
-            self.idx2word = []
+    def __init__(self):
+        self.word2idx = {}
+        self.idx2word = []
 
-        def add_word(self, word):
-            if word not in self.word2idx:
-                self.idx2word.append(word)
-                self.word2idx[word] = len(self.idx2word) - 1
-            return self.word2idx[word]
+    def add_word(self, word):
+        if word not in self.word2idx:
+            self.idx2word.append(word)
+            self.word2idx[word] = len(self.idx2word) - 1
+        return self.word2idx[word]
 
-        def __len__(self):
-            return len(self.idx2word)
+    def __len__(self):
+        return len(self.idx2word)
+
 
 class Corpus(object):
     def __init__(self, path):
@@ -118,19 +120,16 @@ class Corpus(object):
 
         return ids
 
+
 class RNNModel(torch.nn.Module):
-    def __init__(
-        self, vocab_size, embed_size, hidden_size, num_layers, dropout=0.5
-    ):
+    def __init__(self, vocab_size, embed_size, hidden_size, num_layers, dropout=0.5):
         super(RNNModel, self).__init__()
 
         self.encoder = torch.nn.Embedding(
             num_embeddings=vocab_size, embedding_dim=embed_size
         )
         self.dropout1 = torch.nn.Dropout(p=dropout)
-        self.rnn = torch.nn.GRU(
-            embed_size, hidden_size, num_layers, dropout=dropout
-        )
+        self.rnn = torch.nn.GRU(embed_size, hidden_size, num_layers, dropout=dropout)
         self.dropout2 = torch.nn.Dropout(p=dropout)
         self.decoder = torch.nn.Linear(hidden_size, vocab_size)
 
@@ -163,6 +162,7 @@ class RNNModel(torch.nn.Module):
             weight.new(self.num_layers, batch_size, self.hidden_size).zero_()
         )
 
+
 def batchify(data, batch_size):
     # Work out how cleanly we can divide the dataset into bsz parts.
     nbatch = data.size(0) // batch_size
@@ -172,20 +172,20 @@ def batchify(data, batch_size):
     data = data.view(batch_size, -1).t().contiguous()
     return data
 
+
 def get_batch(source, i, bptt_size, evaluation=False):
     seq_len = min(bptt_size, len(source) - 1 - i)
     data = Variable(source[i : i + seq_len], volatile=evaluation)
     target = Variable(source[i + 1 : i + 1 + seq_len].view(-1))
     return data.to(DEVICE), target.to(DEVICE)
 
+
 path = os.path.join(ROOT, "data", "shakespear")
 corpus = Corpus(path)
 
 bs_train = 20  # batch size for training set
 bs_valid = 10  # batch size for validation set
-bptt_size = (
-    35  # number of times to unroll the graph for back propagation through time
-)
+bptt_size = 35  # number of times to unroll the graph for back propagation through time
 clip = 0.25  # gradient clipping to check exploding gradient
 
 embed_size = 200  # size of the embedding vector
@@ -198,10 +198,13 @@ val_data = batchify(corpus.valid, bs_valid)
 
 vocab_size = len(corpus.dictionary)
 
-model = RNNModel(vocab_size, embed_size, hidden_size, num_layers, dropout_pct).to(DEVICE)
+model = RNNModel(vocab_size, embed_size, hidden_size, num_layers, dropout_pct).to(
+    DEVICE
+)
 criterion = torch.nn.CrossEntropyLoss()
 
 data, target = get_batch(train_data, 1, bptt_size)
+
 
 def train(data_source, lr, bptt_size, bs_train, clip=0.25):
     # Turn on training mode which enables dropout.
@@ -233,6 +236,7 @@ def train(data_source, lr, bptt_size, bs_train, clip=0.25):
 
     return total_loss / len(data_source)
 
+
 def evaluate(data_source, bptt_size, bs_valid, vocab_size):
     # Turn on evaluation mode which disables dropout.
     model.eval()
@@ -250,7 +254,9 @@ def evaluate(data_source, bptt_size, bs_valid, vocab_size):
 
     return total_loss / len(data_source)
 
+
 best_val_loss = None
+
 
 def run(epochs, lr, bptt_size, bs_train, bs_valid, vocab_size):
     global best_val_loss
@@ -263,6 +269,7 @@ def run(epochs, lr, bptt_size, bs_train, bs_valid, vocab_size):
         if not best_val_loss or val_loss < best_val_loss:
             best_val_loss = val_loss
             torch.save(model.state_dict(), os.path.join(ROOT, "model", "rnn.model.pth"))
+
 
 run(100, 0.001, bptt_size, bs_train, bs_valid, vocab_size)
 

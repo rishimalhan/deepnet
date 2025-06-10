@@ -168,13 +168,15 @@ if __name__ == "__main__":
     dataloader = IrisDataLoader(
         dataset=iris_dataset, batch_size=30, shuffle=True, num_workers=10
     )
-    model = SimpleNN(
-        input_size=4, hidden_size1=100, hidden_size2=50, num_classes=3
-    ).to(DEVICE)
+    model = SimpleNN(input_size=4, hidden_size1=100, hidden_size2=50, num_classes=3).to(
+        DEVICE
+    )
 
     criterion = nn.CrossEntropyLoss()
     learning_rate = 0.001
-    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, nesterov=True, momentum=0.9, dampening=0.0)
+    optimizer = torch.optim.SGD(
+        model.parameters(), lr=learning_rate, nesterov=True, momentum=0.9, dampening=0.0
+    )
 
     for iter in range(100):
         train_loss = []
@@ -211,7 +213,9 @@ if __name__ == "__main__":
                 correct += (predicted == labels).sum().item()
                 test_loss.append(loss.item())
             test_accuracy = correct / total
-        
+
         train_loss = torch.tensor(train_loss)
         test_loss = torch.tensor(test_loss)
-        print(f"Iter {iter+1}, Training Loss: {train_loss.float().mean():.4f}, Training Accuracy: {training_accuracy:.4f}, Test Loss: {test_loss.float().mean():.4f}, Test Accuracy: {test_accuracy:.4f}")
+        print(
+            f"Iter {iter+1}, Training Loss: {train_loss.float().mean():.4f}, Training Accuracy: {training_accuracy:.4f}, Test Loss: {test_loss.float().mean():.4f}, Test Accuracy: {test_accuracy:.4f}"
+        )

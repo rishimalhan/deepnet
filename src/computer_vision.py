@@ -83,11 +83,11 @@ DEVICE = "mps" if torch.mps.is_available() else "cpu"
 EPOCHS = 100
 
 tf_composed = transforms.Compose(
-        [
-            transforms.ToTensor(),
-            transforms.Normalize(mean=(0.1307,), std=(0.3081,)),
-        ]
-    )
+    [
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.1307,), std=(0.3081,)),
+    ]
+)
 train_data = MNIST(
     root=os.path.join(ROOT, "data"),
     train=True,
@@ -108,6 +108,7 @@ mnist_test_loader = DataLoader(
     test_data, shuffle=True, batch_size=1024, num_workers=2, pin_memory=True
 )
 
+
 class ConvNN(nn.Module):
     def __init__(self):
         super(ConvNN, self).__init__()
@@ -124,7 +125,7 @@ class ConvNN(nn.Module):
         self.relu2 = nn.ReLU()
         self.linear1 = nn.Linear(in_features=3000, out_features=500)
         self.linear2 = nn.Linear(in_features=500, out_features=10)
-    
+
     def forward(self, x):
         x = self.conv1(x)
         x = self.relu1(x)
@@ -136,12 +137,15 @@ class ConvNN(nn.Module):
         x = self.linear1(x)
         x = self.linear2(x)
         return x
-    
+
+
 # Training loop
 model = ConvNN().to(DEVICE)
 criterion = nn.CrossEntropyLoss()
 learning_rate = 0.01
-optimizer = SGD(model.parameters(), lr=learning_rate, nesterov=True, momentum=0.9, dampening=0)
+optimizer = SGD(
+    model.parameters(), lr=learning_rate, nesterov=True, momentum=0.9, dampening=0
+)
 
 for epoch in range(EPOCHS):
     train_loss = []
@@ -174,5 +178,7 @@ for epoch in range(EPOCHS):
         test_loss.append(loss.item())
         test_accuracy.append(correct / labels.size(0))
 
-    print(f"Epoch: {epoch}, Train Loss: {np.average(train_loss):.2f}, Train Accuracy: {np.average(train_accuracy):.2f}, " + \
-    f"Test Loss: {np.average(test_loss):.2f}, Test Accuracy: {np.average(test_accuracy):.2f}")
+    print(
+        f"Epoch: {epoch}, Train Loss: {np.average(train_loss):.2f}, Train Accuracy: {np.average(train_accuracy):.2f}, "
+        + f"Test Loss: {np.average(test_loss):.2f}, Test Accuracy: {np.average(test_accuracy):.2f}"
+    )

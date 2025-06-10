@@ -197,8 +197,8 @@ SECTION-4
 * Learning sequences
 Time series or Text
 Natural language modeling is determining probability distribution over sequences of words
-Applications: 
-    Predictive keyboards (learn prob distribution over sequence of words) 
+Applications:
+    Predictive keyboards (learn prob distribution over sequence of words)
     Machine translation
     Sentiment analysis (also provided as API by clouds)
     Financial forecast
@@ -249,7 +249,7 @@ P(w_t | context), t in Vocabulary
 """
 
 run_section_1 = False
-run_section_2 = False
+run_section_2 = True
 run_section_3 = False
 
 import IPython
@@ -430,7 +430,7 @@ if run_section_2:
             out = self.layer3(out)
             return out
 
-    train_data, test_data = get_datasets(os.path.join(ROOT, "data", "iris_data.txt"))
+    train_data, test_data = get_datasets(os.path.join(ROOT, "data", "iris.csv"))
     logger.info(f"Instances in train data: {len(train_data)}")
     logger.info(f"Instances in test data: {len(test_data)}")
     model = IrisNet(4, 100, 50, 3)
