@@ -14,3 +14,6 @@ torchaudio
 numpy
 gym
 pygame
+scikit-learn
+seaborn
+mlxtend
