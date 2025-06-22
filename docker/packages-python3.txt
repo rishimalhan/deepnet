@@ -17,3 +17,4 @@ pygame
 scikit-learn
 seaborn
 mlxtend
+shap
