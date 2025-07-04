@@ -4,6 +4,7 @@
 
 # Data directories
 data/
+logs/
 
 # Pickle files
 .pickle
