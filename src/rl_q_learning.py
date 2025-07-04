@@ -1,4 +1,4 @@
-#! /usr/bin /python3
+#! /usr/bin/python3
 
 import os
 import random
@@ -43,9 +43,9 @@ gamma = 0.9
 
 # Training metrics
 episode = 0
-step = 0
 episode_reward = 0
 episode_rewards = []
+step = 0
 
 print("Starting Q-Learning training...")
 
@@ -62,7 +62,6 @@ for training_step in range(100000):
 
     obs, reward, done, _, _ = cartpole_env.step(action)
     episode_reward += reward
-    step += 1
     next_state = get_state(cartpole_env)
 
     # Q-learning update
@@ -76,10 +75,10 @@ for training_step in range(100000):
     prev_key = state + (action,)
 
     # Log Q-values for current state periodically
-    if step % 1000 == 0:
-        writer.add_scalar("Q-value[0]", q_values[state + (0,)], step)
-        writer.add_scalar("Q-value[1]", q_values[state + (1,)], step)
+    writer.add_scalar("Q-value[0]", q_values[state + (0,)], training_step)
+    writer.add_scalar("Q-value[1]", q_values[state + (1,)], training_step)
 
+    step += 1
     if done:
         # Log episode reward
         writer.add_scalar("Episode Reward", episode_reward, episode)
@@ -88,7 +87,7 @@ for training_step in range(100000):
         # Log episode length
         writer.add_scalar("Episode Length", step, episode)
 
-        if episode % 1000 == 0:
+        if episode % 100 == 0:
             avg_reward = (
                 np.mean(episode_rewards[-100:])
                 if len(episode_rewards) >= 100
