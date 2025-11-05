@@ -5,7 +5,7 @@
 # Data directories
 data/
 logs/
-video/
+videos/
 
 # Pickle files
 .pickle
