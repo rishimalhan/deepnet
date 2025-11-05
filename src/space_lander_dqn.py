@@ -214,7 +214,7 @@ class Agent:
 
 if __name__ == "__main__":
     # Simple model path setup - model is sibling to src directory
-    model_path = "../model/lunar_lander_dqn.pth"
+    model_path = "./model/lunar_lander_dqn.pth"
 
     # Create model directory if it doesn't exist
     os.makedirs(os.path.dirname(model_path), exist_ok=True)
