@@ -5,12 +5,15 @@
 # Data directories
 data/
 logs/
+video/
 
 # Pickle files
 .pickle
 
 # Model files
 model/
+
+.DS_Store
 
 # Python cache files
 __pycache__/
