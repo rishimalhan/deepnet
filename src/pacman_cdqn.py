@@ -14,7 +14,7 @@ import gymnasium as gym
 import torch
 from torch.nn import Module, Conv2d, BatchNorm2d, Linear
 from torch.optim import Adam
-from torch.nn.functional import relu, interpolate, mse_loss
+from torch.nn.functional import relu, mse_loss
 from collections import deque
 
 SEED = 42
