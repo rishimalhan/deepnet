@@ -21,7 +21,7 @@ Architecture:
 Types:
 Stacked: Layers additional to encoding, bottleneck, and decoding
 Variational: Uses mean and variance to generate new data
-Sparse: 
+Sparse:
 Denoising: Trains on corrupted data to denoise and reconstruct the data
 
 Stacked autoencoder that takes original image and encodes it then decodes again.
@@ -50,13 +50,11 @@ import multiprocessing
 from torch.autograd import Variable
 from IPython import embed
 
-multiprocessing.set_start_method("fork")
-
-DEVICE = "mps" if torch.mps.is_available() else "cpu"
+DEVICE = "cuda"
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-BATCH_SIZE = 500
+BATCH_SIZE = 2000
 LEARNING_RATE = 0.001
-EPOCHS = 10
+EPOCHS = 50
 NOISE_LEVEL = 0.1
 
 
@@ -212,6 +210,6 @@ if __name__ == "__main__":
                     denoised = output[0].cpu().numpy().transpose(1, 2, 0)
                     display_images(original, noisy, denoised)
         print(
-            f"Train Loss: {train_loss / len(train_loader):.2f}, Test Loss: {test_loss / len(test_loader):.2f}\n"
+            f"Train Loss: {train_loss / len(train_loader):.6f}, Test Loss: {test_loss / len(test_loader):.6f}\n"
         )
     embed()
